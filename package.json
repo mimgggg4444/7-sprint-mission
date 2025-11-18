@@ -1,0 +1,24 @@
+{
+  "dependencies": {
+    "axios": "^1.13.2"
+  },
+  "name": "7-sprint-mission",
+  "version": "1.0.0",
+  "description": "- [ ] `class`키워드를 이용해서 Product 클래스를 만들어 주세요.\r     - [ ] `name`(상품명)`description`(상품 설명),`price`(판매 가격),`tags`(해시태그 배열),`images`(이미지 배열),`favoriteCount`(찜하기 수)프로퍼티를 가집니다.\r     - [ ] `favorite`메소드를 가집니다.`favorite`메소드가 호출될 경우 찜하기 수가 1 증가합니다.\r - [ ] `class`키워드를 이용해서 ElectronicProduct 클래스를 만들어 주세요.\r \t- [ ] Product를 상속하며, 추가로`manufacturer`(제조사) 프로퍼티를 가집니다.\r - [ ] class 키워드를 이용해서 Article 클래스를 만들어 주세요.\r     - [ ] `title`(제목),`content`(내용),`writer`(작성자),`likeCount`(좋아요 수) 프로퍼티를 가집니다.\r     - [ ] `like`메소드를 가집니다.`like`메소드가 호출될 경우 좋아요 수가 1 증가합니다.\r - [ ] 각 클래스 마다**constructor**를 작성해 주세요.\r - [ ] 추상화/캡슐화/상속/다형성을 고려하여 코드를 작성해 주세요.",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mimgggg4444/7-sprint-mission.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mimgggg4444/7-sprint-mission/issues"
+  },
+  "homepage": "https://github.com/mimgggg4444/7-sprint-mission#readme"
+}

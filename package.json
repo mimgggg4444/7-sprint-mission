@@ -6,6 +6,7 @@
   "version": "1.0.0",
   "description": "Panda Market API를 활용한 상품 및 게시글 관리 시스템",
   "main": "main.js",
+  "type": "module",
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

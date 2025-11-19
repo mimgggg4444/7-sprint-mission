@@ -194,3 +194,219 @@ console.log();
 console.log('=== 클래스 테스트 완료 ===\n');
 console.log('💡 참고: favoriteCount와 likeCount는 메모리에서만 유지됩니다.');
 console.log('💡 참고: API 버그로 인해 writer는 image 필드로 제공됩니다.');
+
+
+// ========================================
+// API 서비스 Import
+// ========================================
+
+import {
+  getProductList,
+  getProduct,
+  createProduct,
+  patchProduct,
+  deleteProduct,
+} from './ProductService.js';
+
+import {
+  getArticleList,
+  getArticle,
+  createArticle,
+  patchArticle,
+  deleteArticle,
+} from './ArticleService.js';
+
+// ========================================
+// Product API 테스트
+// ========================================
+
+async function testProductAPI() {
+  console.log('=== Product API 테스트 시작 ===\n');
+
+  try {
+    // 1. 상품 목록 조회
+    console.log('1. 상품 목록 조회 테스트');
+    const productListData = await getProductList(1, 10);
+    console.log(`총 ${productListData.list.length}개의 상품 조회됨\n`);
+
+    // 2. 상품 인스턴스 배열 생성 (전자제품 분류)
+    const products = productListData.list.map((item) => {
+      const isElectronic = item.tags.includes('전자제품');
+
+      if (isElectronic) {
+        return new ElectronicProduct(
+          item.name,
+          item.description,
+          item.price,
+          item.tags,
+          item.images,
+          item.manufacturer || 'Unknown'
+        );
+      } else {
+        return new Product(
+          item.name,
+          item.description,
+          item.price,
+          item.tags,
+          item.images
+        );
+      }
+    });
+
+    console.log('2. 상품 인스턴스 생성 완료');
+    console.log(`- 총 ${products.length}개 인스턴스 생성`);
+    console.log(
+      `- ElectronicProduct: ${products.filter((p) => p instanceof ElectronicProduct).length}개`
+    );
+    console.log(
+      `- Product: ${products.filter((p) => p instanceof Product && !(p instanceof ElectronicProduct)).length}개`
+    );
+
+    // favoriteCount 테스트 (in-memory)
+    if (products.length > 0) {
+      console.log('\n💡 favoriteCount 테스트 (in-memory):');
+      products[0].favorite();
+      products[0].favorite();
+      console.log(`첫 번째 상품 찜하기 수: ${products[0].favoriteCount}`);
+    }
+    console.log();
+
+    // 3. 상품 상세 조회
+    if (productListData.list.length > 0) {
+      console.log('3. 상품 상세 조회 테스트');
+      const firstProductId = productListData.list[0].id;
+      await getProduct(firstProductId);
+      console.log();
+    }
+
+    // 4. 상품 생성 테스트
+    console.log('4. 상품 생성 테스트');
+    const newProduct = await createProduct({
+      name: '테스트 상품',
+      description: 'API 테스트용 상품입니다',
+      price: 10000,
+      tags: ['테스트', '샘플'],
+      images: ['https://example.com/image.jpg'],
+    });
+    const createdProductId = newProduct.id;
+    console.log(`생성된 상품 ID: ${createdProductId}\n`);
+
+    // 5. 상품 수정 테스트
+    console.log('5. 상품 수정 테스트');
+    await patchProduct(createdProductId, {
+      name: '수정된 테스트 상품',
+      price: 15000,
+    });
+    console.log();
+
+    // 6. 상품 삭제 테스트
+    console.log('6. 상품 삭제 테스트');
+    await deleteProduct(createdProductId);
+    console.log();
+  } catch (error) {
+    console.error('Product API 테스트 중 오류 발생:', error.message);
+  }
+
+  console.log('=== Product API 테스트 완료 ===\n');
+}
+
+// ========================================
+// Article API 테스트
+// ========================================
+
+function testArticleAPI() {
+  console.log('=== Article API 테스트 시작 ===\n');
+
+  let createdArticleId;
+
+  // 1. 게시글 목록 조회
+  console.log('1. 게시글 목록 조회 테스트');
+  getArticleList(1, 10)
+    .then((data) => {
+      console.log(`총 ${data.list.length}개의 게시글 조회됨\n`);
+
+      // Article 인스턴스 생성 (image를 writer로 사용)
+      const articles = data.list.map(item => new Article(
+        item.title,
+        item.content,
+        item.image
+      ));
+
+      console.log('💡 Article 인스턴스 생성 완료:');
+      console.log(`- 총 ${articles.length}개 생성`);
+
+      // likeCount 테스트 (in-memory)
+      if (articles.length > 0) {
+        console.log('\n💡 likeCount 테스트 (in-memory):');
+        articles[0].like();
+        articles[0].like();
+        console.log(`첫 번째 게시글 좋아요 수: ${articles[0].likeCount}`);
+        console.log(`writer(image): ${articles[0].writer}`);
+      }
+      console.log();
+
+      // 2. 게시글 상세 조회
+      if (data.list.length > 0) {
+        console.log('2. 게시글 상세 조회 테스트');
+        const firstArticleId = data.list[0].id;
+        return getArticle(firstArticleId);
+      }
+    })
+    .then(() => {
+      console.log();
+      // 3. 게시글 생성 테스트
+      console.log('3. 게시글 생성 테스트');
+      return createArticle({
+        title: '테스트 게시글',
+        content: 'API 테스트용 게시글입니다',
+        image: 'https://example.com/image.jpg',
+      });
+    })
+    .then((newArticle) => {
+      createdArticleId = newArticle.id;
+      console.log(`생성된 게시글 ID: ${createdArticleId}\n`);
+
+      // 4. 게시글 수정 테스트
+      console.log('4. 게시글 수정 테스트');
+      return patchArticle(createdArticleId, {
+        title: '수정된 테스트 게시글',
+        content: '내용이 수정되었습니다',
+      });
+    })
+    .then(() => {
+      console.log();
+      // 5. 게시글 삭제 테스트
+      console.log('5. 게시글 삭제 테스트');
+      return deleteArticle(createdArticleId);
+    })
+    .then(() => {
+      console.log();
+      console.log('=== Article API 테스트 완료 ===\n');
+    })
+    .catch((error) => {
+      console.error('Article API 테스트 중 오류 발생:', error.message);
+    });
+}
+
+// ========================================
+// 메인 실행 함수
+// ========================================
+
+async function main() {
+  console.log('\n🚀 Panda Market API 프로젝트 시작\n');
+  console.log('='.repeat(50));
+  console.log();
+
+  // Product API 테스트 실행
+  await testProductAPI();
+
+  // 약간의 지연 후 Article API 테스트 실행
+  setTimeout(() => {
+    testArticleAPI();
+  }, 1000);
+}
+
+// 프로그램 실행
+main().catch((error) => {
+  console.error('프로그램 실행 중 오류 발생:', error);
+});

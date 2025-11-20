@@ -83,6 +83,7 @@ export function getArticleList(page = 1, pageSize = 10, keyword = '') {
 
     });
 }
+
 /**
  * 게시글 상세 조회
  * @param {number} articleId - 게시글 ID
@@ -102,6 +103,7 @@ export function getArticle(articleId) {
       throw error;
     });
 }
+
 /**
  * 게시글 생성
  * @param {Object} articleData - 게시글 데이터
@@ -138,6 +140,7 @@ export function createArticle(articleData) {
 
     });
 }
+
 /**
  * 게시글 수정
  * @param {number} articleId - 게시글 ID
@@ -166,6 +169,7 @@ export function patchArticle(articleId, articleData) {
 
     });
 }
+
 /**
  * 게시글 삭제
  * @param {number} articleId - 게시글 ID

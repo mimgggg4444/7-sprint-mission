@@ -5,6 +5,62 @@
 const BASE_URL = 'https://panda-market-api-crud.vercel.app';
 
 /**
+ * 쿼리 스트링 생성 유틸
+ * - page, pageSize는 숫자를 문자열로 변환
+ * - keyword가 비어있으면 포함하지 않음
+ */
+function buildQuery({ page, pageSize, keyword }) {
+  const params = new URLSearchParams();
+
+  if (page != null) {
+    params.set('page', String(page));
+  }
+
+  if (pageSize != null) {
+    params.set('pageSize', String(pageSize));
+  }
+
+  if (keyword) {
+    params.set('keyword', keyword);
+  }
+
+  return params.toString();
+}
+
+/**
+ * fetch 응답 상태코드 검증
+ * - 2xx 가 아니면 예외 발생
+ */
+function validateResponse(response) {
+  if (!response.ok) {
+    // 상태 코드와 상태 텍스트만 담아서 깔끔하게
+    throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+  }
+  return response;
+}
+
+/**
+ * 공통 성공 로그
+ */
+function logSuccess(message) {
+  console.log(`✅ ${message}`);
+}
+
+/**
+ * 공통 에러 로그
+ */
+function logError(context, error) {
+  console.error(`❌ ${context}: ${error.message}`);
+}
+
+/**
+ * JSON 응답 파싱
+ */
+function parseJson(response) {
+  return response.json();
+}
+
+/**
  * 게시글 목록 조회
  * @param {number} page - 페이지 번호
  * @param {number} pageSize - 페이지 크기
@@ -12,37 +68,21 @@ const BASE_URL = 'https://panda-market-api-crud.vercel.app';
  * @returns {Promise} 게시글 목록
  */
 export function getArticleList(page = 1, pageSize = 10, keyword = '') {
-  // 쿼리 파라미터 생성
-  const params = new URLSearchParams({
-    page: page.toString(),
-    pageSize: pageSize.toString(),
-  });
-
-  // keyword가 있을 경우에만 추가
-  if (keyword) {
-    params.append('keyword', keyword);
-  }
-
-  const url = `${BASE_URL}/articles?${params.toString()}`;
-
+  const query = buildQuery({ page, pageSize, keyword });
+  const url = `${BASE_URL}/articles?${query}`;
   return fetch(url)
-    .then((response) => {
-      // 응답 상태 코드 확인
-      if (!response.ok) {
-        throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
-      }
-      return response.json();
-    })
+    .then(validateResponse)
+    .then(parseJson)
     .then((data) => {
-      console.log('✅ 게시글 목록 조회 성공');
+      logSuccess('게시글 목록 조회 성공');
       return data;
     })
     .catch((error) => {
-      console.error('❌ 게시글 목록 조회 실패:', error.message);
+      logError('게시글 목록 조회 실패', error);
       throw error;
+
     });
 }
-
 /**
  * 게시글 상세 조회
  * @param {number} articleId - 게시글 ID
@@ -50,24 +90,18 @@ export function getArticleList(page = 1, pageSize = 10, keyword = '') {
  */
 export function getArticle(articleId) {
   const url = `${BASE_URL}/articles/${articleId}`;
-
   return fetch(url)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
-      }
-      return response.json();
-    })
+    .then(validateResponse)
+    .then(parseJson)
     .then((data) => {
-      console.log(`✅ 게시글 조회 성공 (ID: ${articleId})`);
+      logSuccess(`게시글 조회 성공 (ID: ${articleId})`);
       return data;
     })
     .catch((error) => {
-      console.error(`❌ 게시글 조회 실패 (ID: ${articleId}):`, error.message);
+      logError(`게시글 조회 실패 (ID: ${articleId})`, error);
       throw error;
     });
 }
-
 /**
  * 게시글 생성
  * @param {Object} articleData - 게시글 데이터
@@ -92,22 +126,18 @@ export function createArticle(articleData) {
     },
     body: JSON.stringify(requestBody),
   })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
-      }
-      return response.json();
-    })
+    .then(validateResponse)
+    .then(parseJson)
     .then((data) => {
-      console.log('✅ 게시글 생성 성공');
+      logSuccess('게시글 생성 성공');
       return data;
     })
     .catch((error) => {
-      console.error('❌ 게시글 생성 실패:', error.message);
+      logError('게시글 생성 실패', error);
       throw error;
+
     });
 }
-
 /**
  * 게시글 수정
  * @param {number} articleId - 게시글 ID
@@ -124,22 +154,18 @@ export function patchArticle(articleId, articleData) {
     },
     body: JSON.stringify(articleData),
   })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
-      }
-      return response.json();
-    })
+    .then(validateResponse)
+    .then(parseJson)
     .then((data) => {
-      console.log(`✅ 게시글 수정 성공 (ID: ${articleId})`);
+      logSuccess(`게시글 수정 성공 (ID: ${articleId})`);
       return data;
     })
     .catch((error) => {
-      console.error(`❌ 게시글 수정 실패 (ID: ${articleId}):`, error.message);
+      logError(`게시글 수정 실패 (ID: ${articleId})`, error);
       throw error;
+
     });
 }
-
 /**
  * 게시글 삭제
  * @param {number} articleId - 게시글 ID
@@ -151,19 +177,20 @@ export function deleteArticle(articleId) {
   return fetch(url, {
     method: 'DELETE',
   })
+    .then(validateResponse)
     .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
-      }
       // DELETE는 응답 body가 없을 수 있음
-      return response.status === 204 ? null : response.json();
+      if (response.status === 204) {
+        return null;
+      }
+      return response.json();
     })
     .then(() => {
-      console.log(`✅ 게시글 삭제 성공 (ID: ${articleId})`);
+      logSuccess(`게시글 삭제 성공 (ID: ${articleId})`);
       return { success: true, articleId };
     })
     .catch((error) => {
-      console.error(`❌ 게시글 삭제 실패 (ID: ${articleId}):`, error.message);
+      logError(`게시글 삭제 실패 (ID: ${articleId})`, error);
       throw error;
     });
 }

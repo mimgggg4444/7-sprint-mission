@@ -1,14 +1,6 @@
-# Node
-# -------------------------------------------------------------------
-/node_modules
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# VS Code (사용하는 경우)
-# -------------------------------------------------------------------
-.vscode/
-
-# Environment Variables (민감 정보가 있다면)
-# -------------------------------------------------------------------
+node_modules
+# Keep environment variables out of version control
 .env
+.claude
+uploads/*
+!uploads/.gitkeep

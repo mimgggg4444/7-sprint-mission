@@ -1,0 +1,126 @@
+### 모든 Article 가져오기
+GET http://localhost:3000/articles?orderBy=recent
+Accept: application/json
+
+### 새로운 Article 만들기
+POST http://localhost:3000/articles
+Content-Type: application/json
+
+{
+    "title": "새로운 Article",
+    "content": "이것은 새로운 Article의 내용입니다.",
+    "image": "https://example.com/image.jpg"
+}
+
+### 특정 ID의 Article 가져오기
+GET http://localhost:3000/articles/101
+Accept: application/json
+
+### Article 업데이트하기
+PATCH http://localhost:3000/articles/12
+Content-Type: application/json
+
+{
+    "title": "Article 12 업데이트",
+    "content": "이것은 업데이트된 내용입니다."
+}
+
+### Article 삭제하기
+DELETE http://localhost:3000/articles/101
+Accept: application/json
+
+### Article에 Comment 달기 테스트
+POST http://localhost:3000/articles/2/comments
+Content-Type: application/json
+
+{
+    "content": "이것은 Article에 대한 테스트 Comment입니다."
+}
+
+### Article의 Comment 가져오기 테스트
+GET http://localhost:3000/articles/2/comments?limit=200
+Accept: application/json
+
+### Comment 업데이트 테스트
+PATCH http://localhost:3000/comments/105
+Content-Type: application/json
+
+{
+    "content": "이것은 업데이트된 테스트 Comment입니다."
+}
+
+### Comment 삭제 테스트
+DELETE http://localhost:3000/comments/1
+Accept: application/json
+
+### 새로운 Product 만들기 테스트
+POST http://localhost:3000/products
+Content-Type: application/json
+
+{
+    "name": "테스트 Product",
+    "description": "이것은 테스트 Product 설명입니다.",
+    "price": 100,
+    "tags": [],
+    "images": ["image1.png", "image2.png"]
+}
+
+### 모든 Product 가져오기 테스트
+GET http://localhost:3000/products
+Accept: application/json
+
+### 특정 ID의 Product 가져오기 테스트
+GET http://localhost:3000/products/1
+Accept: application/json
+
+### Product 업데이트하기 테스트
+PATCH http://localhost:3000/products/2
+Content-Type: application/json
+
+{
+    "name": "업데이트된 테스트 Product",
+    "description": "이것은 업데이트된 테스트 Product 설명입니다.",
+    "price": 150,
+    "tags": ["업데이트", "Product"],
+    "images": ["업데이트된_image1.png"]
+}
+
+### Product 삭제하기 테스트
+DELETE http://localhost:3000/products/1
+Accept: application/json
+
+### Product에 Comment 달기 테스트
+POST http://localhost:3000/products/3/comments
+Content-Type: application/json
+
+{
+    "content": "이것은 Product에 대한 테스트 Comment입니다."
+}
+
+### Product의 Comment 가져오기 테스트
+GET http://localhost:3000/products/3/comments
+Accept: application/json
+
+
+### Comment 업데이트하기 테스트
+PATCH http://localhost:3000/comments/115
+Content-Type: application/json
+
+{
+    "content": "이것은 업데이트된 테스트 Comment입니다."
+}
+
+### Comment 삭제하기 테스트
+DELETE http://localhost:3000/comments/115
+Accept: application/json
+
+### 이미지 업로드 테스트
+POST http://localhost:3000/images/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="image"; filename="test.png"
+Content-Type: image/png
+
+< ./test.png
+------WebKitFormBoundary7MA4YWxkTrZu0gW--

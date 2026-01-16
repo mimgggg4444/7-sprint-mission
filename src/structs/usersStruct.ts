@@ -1,4 +1,4 @@
-import { object, string, size, refine } from 'superstruct';
+import { object, string, size, refine, Infer } from 'superstruct';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -22,3 +22,9 @@ export const ChangePasswordStruct = object({
   currentPassword: string(),
   newPassword: size(string(), 8, 100),
 });
+
+// Inferred types
+export type SignUpData = Infer<typeof SignUpStruct>;
+export type SignInData = Infer<typeof SignInStruct>;
+export type UpdateUserData = Infer<typeof UpdateUserStruct>;
+export type ChangePasswordData = Infer<typeof ChangePasswordStruct>;

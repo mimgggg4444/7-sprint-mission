@@ -1,5 +1,6 @@
+import { Request, Response } from 'express';
 import { assert } from 'superstruct';
-import prisma from '../lib/prismaClient.js';
+import { prismaClient } from '../lib/prismaClient.js';
 import {
   hashPassword,
   comparePassword,
@@ -16,17 +17,20 @@ import {
 import BadRequestError from '../lib/errors/BadRequestError.js';
 import NotFoundError from '../lib/errors/NotFoundError.js';
 import UnauthorizedError from '../lib/errors/UnauthorizedError.js';
+import { User } from '@prisma/client';
 
-function excludePassword(user) {
+type SafeUser = Omit<User, 'password' | 'refreshToken'>;
+
+function excludePassword(user: User): SafeUser {
   const { password, refreshToken, ...userWithoutPassword } = user;
   return userWithoutPassword;
 }
 
-export async function signUp(req, res) {
+export async function signUp(req: Request, res: Response): Promise<void> {
   assert(req.body, SignUpStruct);
   const { email, nickname, password } = req.body;
 
-  const existingUser = await prisma.user.findUnique({
+  const existingUser = await prismaClient.user.findUnique({
     where: { email },
   });
 
@@ -36,7 +40,7 @@ export async function signUp(req, res) {
 
   const hashedPassword = await hashPassword(password);
 
-  const user = await prisma.user.create({
+  const user = await prismaClient.user.create({
     data: {
       email,
       nickname,
@@ -47,23 +51,23 @@ export async function signUp(req, res) {
   const accessToken = generateAccessToken(user.id);
   const refreshToken = generateRefreshToken(user.id);
 
-  await prisma.user.update({
+  await prismaClient.user.update({
     where: { id: user.id },
     data: { refreshToken },
   });
 
-  return res.status(201).send({
+  res.status(201).send({
     accessToken,
     refreshToken,
     user: excludePassword(user),
   });
 }
 
-export async function signIn(req, res) {
+export async function signIn(req: Request, res: Response): Promise<void> {
   assert(req.body, SignInStruct);
   const { email, password } = req.body;
 
-  const user = await prisma.user.findUnique({
+  const user = await prismaClient.user.findUnique({
     where: { email },
   });
 
@@ -80,19 +84,19 @@ export async function signIn(req, res) {
   const accessToken = generateAccessToken(user.id);
   const refreshToken = generateRefreshToken(user.id);
 
-  await prisma.user.update({
+  await prismaClient.user.update({
     where: { id: user.id },
     data: { refreshToken },
   });
 
-  return res.status(200).send({
+  res.status(200).send({
     accessToken,
     refreshToken,
     user: excludePassword(user),
   });
 }
 
-export async function refreshAccessToken(req, res) {
+export async function refreshAccessToken(req: Request, res: Response): Promise<void> {
   const { refreshToken } = req.body;
 
   if (!refreshToken) {
@@ -105,7 +109,7 @@ export async function refreshAccessToken(req, res) {
     throw new UnauthorizedError('Invalid or expired refresh token');
   }
 
-  const user = await prisma.user.findUnique({
+  const user = await prismaClient.user.findUnique({
     where: { id: decoded.userId },
   });
 
@@ -115,45 +119,45 @@ export async function refreshAccessToken(req, res) {
 
   const newAccessToken = generateAccessToken(user.id);
 
-  return res.status(200).send({
+  res.status(200).send({
     accessToken: newAccessToken,
   });
 }
 
-export async function getMe(req, res) {
-  const user = await prisma.user.findUnique({
-    where: { id: req.user.userId },
+export async function getMe(req: Request, res: Response): Promise<void> {
+  const user = await prismaClient.user.findUnique({
+    where: { id: req.user!.userId },
   });
 
   if (!user) {
-    throw new NotFoundError('User not found');
+    throw new NotFoundError('User', req.user!.userId);
   }
 
-  return res.status(200).send(excludePassword(user));
+  res.status(200).send(excludePassword(user));
 }
 
-export async function updateMe(req, res) {
+export async function updateMe(req: Request, res: Response): Promise<void> {
   assert(req.body, UpdateUserStruct);
   const { nickname, image } = req.body;
 
-  const user = await prisma.user.update({
-    where: { id: req.user.userId },
+  const user = await prismaClient.user.update({
+    where: { id: req.user!.userId },
     data: { nickname, image },
   });
 
-  return res.status(200).send(excludePassword(user));
+  res.status(200).send(excludePassword(user));
 }
 
-export async function changePassword(req, res) {
+export async function changePassword(req: Request, res: Response): Promise<void> {
   assert(req.body, ChangePasswordStruct);
   const { currentPassword, newPassword } = req.body;
 
-  const user = await prisma.user.findUnique({
-    where: { id: req.user.userId },
+  const user = await prismaClient.user.findUnique({
+    where: { id: req.user!.userId },
   });
 
   if (!user) {
-    throw new NotFoundError('User not found');
+    throw new NotFoundError('User', req.user!.userId);
   }
 
   const isPasswordValid = await comparePassword(currentPassword, user.password);
@@ -164,26 +168,26 @@ export async function changePassword(req, res) {
 
   const hashedPassword = await hashPassword(newPassword);
 
-  await prisma.user.update({
-    where: { id: req.user.userId },
+  await prismaClient.user.update({
+    where: { id: req.user!.userId },
     data: { password: hashedPassword },
   });
 
-  return res.status(200).send({ message: 'Password changed successfully' });
+  res.status(200).send({ message: 'Password changed successfully' });
 }
 
-export async function getMyProducts(req, res) {
-  const products = await prisma.product.findMany({
-    where: { userId: req.user.userId },
+export async function getMyProducts(req: Request, res: Response): Promise<void> {
+  const products = await prismaClient.product.findMany({
+    where: { userId: req.user!.userId },
     orderBy: { createdAt: 'desc' },
   });
 
-  return res.status(200).send(products);
+  res.status(200).send(products);
 }
 
-export async function getFavoriteProducts(req, res) {
-  const favorites = await prisma.productLike.findMany({
-    where: { userId: req.user.userId },
+export async function getFavoriteProducts(req: Request, res: Response): Promise<void> {
+  const favorites = await prismaClient.productLike.findMany({
+    where: { userId: req.user!.userId },
     include: {
       product: true,
     },
@@ -192,5 +196,5 @@ export async function getFavoriteProducts(req, res) {
 
   const products = favorites.map((favorite) => favorite.product);
 
-  return res.status(200).send(products);
+  res.status(200).send(products);
 }

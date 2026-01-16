@@ -10,7 +10,7 @@ import {
   getFavoriteProducts,
 } from '../controllers/usersController.js';
 import { authenticate } from '../middleware/authMiddleware.js';
-import withAsync from '../lib/withAsync.js';
+import { withAsync } from '../lib/withAsync.js';
 
 const router = express.Router();
 

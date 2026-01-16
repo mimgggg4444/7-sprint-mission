@@ -1,3 +1,4 @@
+import { Request, Response } from 'express';
 import { create } from 'superstruct';
 import { prismaClient } from '../lib/prismaClient.js';
 import NotFoundError from '../lib/errors/NotFoundError.js';
@@ -10,20 +11,20 @@ import {
 } from '../structs/articlesStructs.js';
 import { CreateCommentBodyStruct, GetCommentListParamsStruct } from '../structs/commentsStruct.js';
 
-export async function createArticle(req, res) {
+export async function createArticle(req: Request, res: Response): Promise<void> {
   const data = create(req.body, CreateArticleBodyStruct);
 
   const article = await prismaClient.article.create({
     data: {
       ...data,
-      userId: req.user.userId
+      userId: req.user!.userId
     }
   });
 
-  return res.status(201).send(article);
+  res.status(201).send(article);
 }
 
-export async function getArticle(req, res) {
+export async function getArticle(req: Request, res: Response): Promise<void> {
   const { id } = create(req.params, IdParamsStruct);
 
   const article = await prismaClient.article.findUnique({
@@ -55,17 +56,17 @@ export async function getArticle(req, res) {
     isLiked = !!like;
   }
 
-  const response = {
+  const response: Record<string, unknown> = {
     ...article,
     likeCount: article._count.articleLikes,
     isLiked,
   };
   delete response._count;
 
-  return res.send(response);
+  res.send(response);
 }
 
-export async function updateArticle(req, res) {
+export async function updateArticle(req: Request, res: Response): Promise<void> {
   const { id } = create(req.params, IdParamsStruct);
   const data = create(req.body, UpdateArticleBodyStruct);
 
@@ -74,16 +75,16 @@ export async function updateArticle(req, res) {
     throw new NotFoundError('article', id);
   }
 
-  if (existingArticle.userId !== req.user.userId) {
+  if (existingArticle.userId !== req.user!.userId) {
     throw new ForbiddenError('You do not have permission to update this article');
   }
 
   const article = await prismaClient.article.update({ where: { id }, data });
 
-  return res.send(article);
+  res.send(article);
 }
 
-export async function deleteArticle(req, res) {
+export async function deleteArticle(req: Request, res: Response): Promise<void> {
   const { id } = create(req.params, IdParamsStruct);
 
   const existingArticle = await prismaClient.article.findUnique({ where: { id } });
@@ -91,16 +92,16 @@ export async function deleteArticle(req, res) {
     throw new NotFoundError('article', id);
   }
 
-  if (existingArticle.userId !== req.user.userId) {
+  if (existingArticle.userId !== req.user!.userId) {
     throw new ForbiddenError('You do not have permission to delete this article');
   }
 
   await prismaClient.article.delete({ where: { id } });
 
-  return res.status(204).send();
+  res.status(204).send();
 }
 
-export async function getArticleList(req, res) {
+export async function getArticleList(req: Request, res: Response): Promise<void> {
   const { page, pageSize, orderBy, keyword } = create(req.query, GetArticleListParamsStruct);
 
   const where = {
@@ -115,13 +116,13 @@ export async function getArticleList(req, res) {
     where,
   });
 
-  return res.send({
+  res.send({
     list: articles,
     totalCount,
   });
 }
 
-export async function createComment(req, res) {
+export async function createComment(req: Request, res: Response): Promise<void> {
   const { id: articleId } = create(req.params, IdParamsStruct);
   const { content } = create(req.body, CreateCommentBodyStruct);
 
@@ -134,14 +135,14 @@ export async function createComment(req, res) {
     data: {
       articleId,
       content,
-      userId: req.user.userId
+      userId: req.user!.userId
     },
   });
 
-  return res.status(201).send(comment);
+  res.status(201).send(comment);
 }
 
-export async function toggleArticleLike(req, res) {
+export async function toggleArticleLike(req: Request, res: Response): Promise<void> {
   const { id: articleId } = create(req.params, IdParamsStruct);
 
   const existingArticle = await prismaClient.article.findUnique({ where: { id: articleId } });
@@ -152,7 +153,7 @@ export async function toggleArticleLike(req, res) {
   const existingLike = await prismaClient.articleLike.findUnique({
     where: {
       userId_articleId: {
-        userId: req.user.userId,
+        userId: req.user!.userId,
         articleId,
       }
     }
@@ -162,19 +163,19 @@ export async function toggleArticleLike(req, res) {
     await prismaClient.articleLike.delete({
       where: { id: existingLike.id }
     });
-    return res.status(200).send({ message: 'Like removed', isLiked: false });
+    res.status(200).send({ message: 'Like removed', isLiked: false });
   } else {
     await prismaClient.articleLike.create({
       data: {
-        userId: req.user.userId,
+        userId: req.user!.userId,
         articleId,
       }
     });
-    return res.status(200).send({ message: 'Like added', isLiked: true });
+    res.status(200).send({ message: 'Like added', isLiked: true });
   }
 }
 
-export async function getCommentList(req, res) {
+export async function getCommentList(req: Request, res: Response): Promise<void> {
   const { id: articleId } = create(req.params, IdParamsStruct);
   const { cursor, limit } = create(req.query, GetCommentListParamsStruct);
 
@@ -193,7 +194,7 @@ export async function getCommentList(req, res) {
   const cursorComment = commentsWithCursor[commentsWithCursor.length - 1];
   const nextCursor = cursorComment ? cursorComment.id : null;
 
-  return res.send({
+  res.send({
     list: comments,
     nextCursor,
   });

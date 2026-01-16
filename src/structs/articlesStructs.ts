@@ -1,4 +1,4 @@
-import { coerce, nonempty, nullable, object, partial, string } from 'superstruct';
+import { coerce, nonempty, nullable, object, partial, string, Infer } from 'superstruct';
 import { PageParamsStruct } from './commonStructs.js';
 
 export const GetArticleListParamsStruct = PageParamsStruct;
@@ -10,3 +10,7 @@ export const CreateArticleBodyStruct = object({
 });
 
 export const UpdateArticleBodyStruct = partial(CreateArticleBodyStruct);
+
+// Inferred types
+export type CreateArticleBody = Infer<typeof CreateArticleBodyStruct>;
+export type UpdateArticleBody = Infer<typeof UpdateArticleBodyStruct>;

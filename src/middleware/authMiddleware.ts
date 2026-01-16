@@ -1,7 +1,8 @@
+import { Request, Response, NextFunction } from 'express';
 import { verifyAccessToken } from '../lib/authUtils.js';
 import UnauthorizedError from '../lib/errors/UnauthorizedError.js';
 
-export function authenticate(req, res, next) {
+export function authenticate(req: Request, _res: Response, next: NextFunction): void {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -19,7 +20,7 @@ export function authenticate(req, res, next) {
   next();
 }
 
-export function optionalAuthenticate(req, res, next) {
+export function optionalAuthenticate(req: Request, _res: Response, next: NextFunction): void {
   const authHeader = req.headers.authorization;
 
   if (authHeader && authHeader.startsWith('Bearer ')) {

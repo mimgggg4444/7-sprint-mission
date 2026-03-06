@@ -1,0 +1,12 @@
+# Local files
+.vscode/
+node_modules/
+.env*
+!.env.example
+build/
+coverage/
+
+# Uploaded files
+public/*
+!public/.gitkeep
+!public/socket-client-test.html
